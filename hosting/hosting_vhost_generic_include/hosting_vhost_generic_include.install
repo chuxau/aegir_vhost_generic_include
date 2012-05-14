@@ -1,0 +1,70 @@
+<?php
+/**
+ * @file
+ * Installation and update functions for hosting_vhost_generic_include.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function hosting_vhost_generic_include_schema() {
+  $schema['hosting_vhost_generic_include'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'content' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add the message field to the table.
+ */
+function hosting_vhost_generic_include_update_6100() {
+  $ret = array();
+
+  $field['content'] = array(
+    'type' => 'text',
+    'not null' => TRUE,
+  );
+
+  db_add_field($ret, 'hosting_vhost_generic_include', 'content', $field['content']);
+
+  return $ret;
+}
+
+/**
+ * Implements hook_install().
+ */
+function hosting_vhost_generic_include_install() {
+  // Create tables.
+  drupal_install_schema('hosting_vhost_generic_include');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function hosting_vhost_generic_include_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('hosting_vhost_generic_include');
+}
+

@@ -1,0 +1,7 @@
+name = Virtual Host Generic Include
+description = Allows admins to specify an include block to be added to vhost configuration for sites.
+package = Hosting
+dependencies[] = hosting_site
+
+core = 6.x
+

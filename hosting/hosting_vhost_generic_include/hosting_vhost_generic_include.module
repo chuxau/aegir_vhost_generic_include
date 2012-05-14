@@ -1,0 +1,116 @@
+<?php
+/**
+ * @file
+ * hosting_vhost_generic_include handles config params for aegir apache confs
+ *
+ */
+
+
+/**
+ * Implements hook_form_alter()
+ */
+function hosting_vhost_generic_include_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'site_node_form') {
+
+    $form['vhost_generic_include'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Virtual Host Generic Include'),
+      '#description' => t('Specify an include block to be added to vhost configuration for sites.'),
+    );
+
+    $form['vhost_generic_include']['vhost_generic_include_content'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Content'),
+      '#default_value' => $form['#node']->vhost_generic_include_content ? $form['#node']->vhost_generic_include_content : '',
+      '#weight' => 0,
+    );
+    return $form;
+  }
+}
+
+/**
+ * Implements hook_insert()
+ */
+function hosting_vhost_generic_include_insert($node) {
+  if ($node->vhost_generic_include_content) {
+    db_query("INSERT INTO {hosting_vhost_generic_include} (vid, nid, content) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $node->vhost_generic_include_content);
+  }
+}
+
+/**
+ * Implements hook_update()
+ */
+function hosting_vhost_generic_include_update($node) {
+  if (FALSE === db_fetch_array(db_query("SELECT content AS vhost_generic_include_content FROM {hosting_vhost_generic_include} WHERE vid = %d", $node->vid))) {
+    hosting_vhost_generic_include_insert($node);
+  }
+  else {
+    db_query("UPDATE {hosting_vhost_generic_include} SET content = '%s' WHERE vid = %d", $node->vhost_generic_include_content, $node->vid);
+  }
+
+}
+
+/**
+ * Implements hook_delete()
+ */
+function hosting_vhost_generic_include_delete($node) {
+  db_query("DELETE FROM {hosting_vhost_generic_include} WHERE nid=%d", $node->nid);
+}
+
+/**
+ * Implements hook_delete_revision()
+ */
+function hosting_vhost_generic_include_delete_revision($node) {
+  db_query("DELETE FROM {hosting_vhost_generic_include} WHERE vid=%d", $node->vid);
+}
+
+/**
+ * Implements hook_nodeapi()
+ */
+function hosting_vhost_generic_include_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($node->type == 'site') {
+    switch ($op) {
+    case 'insert':
+        hosting_vhost_generic_include_insert($node);
+        break;
+      case 'update':
+        hosting_vhost_generic_include_update($node);
+        break;
+      case 'delete' :
+        hosting_vhost_generic_include_delete($node);
+        break;
+      case 'delete revision':
+        hosting_vhost_generic_include_delete_revision($node);
+        break;
+      case 'validate' :
+        break;
+      case 'load':
+        $additions = db_fetch_array(db_query("SELECT content AS vhost_generic_include_content FROM {hosting_vhost_generic_include} WHERE vid = %d", $node->vid));
+        return $additions;
+        break;
+    }
+  }
+}
+
+/**
+ * Implements hook_feeds_node_processor_targets_alter().
+ */
+function hosting_vhost_generic_include_feeds_node_processor_targets_alter(&$targets, $content_type) {
+  if ($content_type == 'site') {
+    $targets['vhost_generic_include_content'] = array(
+      'name' => t('Virtual Host Generic Include Content'),
+      'description' => t('Set this to somethining you want to be included in your virtual host directive.'),
+      'callback' => 'hosting_vhost_generic_include_set_target_vhost_generic_include_simple',
+    );
+  }
+}
+
+/**
+ * Mapping callback for feeds.
+ */
+function hosting_vhost_generic_include_set_target_vhost_generic_include_simple($node, $target, $value) {
+  if (!empty($value)) {
+    $node->$target = $value;
+  }
+}
+

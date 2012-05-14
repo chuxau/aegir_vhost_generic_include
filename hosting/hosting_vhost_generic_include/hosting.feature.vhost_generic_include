@@ -1,0 +1,31 @@
+<?php
+
+
+/**
+ * @file
+ *   The hosting feature definition for vhost generic include
+ */
+
+/**
+ * Register a hosting feature with Aegir.
+ *
+ * This will be used to generate the 'admin/hosting' page.
+ *
+ * @return array
+ *  associative array indexed by feature key.
+ */
+function hosting_vhost_generic_include_hosting_feature() {
+  $features['vhost_generic_include'] = array(
+    // title to display in form
+    'title' => t('Virtual Host Generic Include'),
+    // description
+    'description' => t('Allows admins to specify an include block to be added to vhost configuration for sites.'),
+    'status' => HOSTING_FEATURE_DISABLED,
+    // module to enable/disable alongside feature
+    'module' => 'hosting_vhost_generic_include',
+    // which group to display in ( null , experimental )
+    'group' => 'experimental'
+    );
+  return $features;
+}
+
